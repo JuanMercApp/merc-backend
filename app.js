@@ -10,15 +10,6 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan('tiny'));
 app.use('/api', api(debug));
 
-app.use((err, req, res, next) => {
-    res.status(err.status || 500);
-    res.json({ 
-        error: {
-            message: 'Server Error'
-        }
-    });
-});
-
 app.listen(PORT, () => {
     debug(`listening on port ${chalk.green(PORT)}`);
 });

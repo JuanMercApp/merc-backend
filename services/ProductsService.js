@@ -59,7 +59,12 @@ export default class ProductsService {
 
 
     static getMostImportantCategory(rawProducts) {
-        const rawCategories = rawProducts.available_filters.find((filter) => filter.id === 'category').values;
+        const rawCategoryFilter = rawProducts.available_filters.find((filter) => filter.id === 'category');
+        if (rawCategoryFilter == null) {
+            return null;
+        }
+
+        const rawCategories = rawCategoryFilter.values;
         let mostImportantCategory = {results: 0};
         rawCategories.forEach((category) => {
             if (category.results > mostImportantCategory.results) {
@@ -67,6 +72,16 @@ export default class ProductsService {
             }
         });
         return mostImportantCategory;
+    }
+
+    static getBreadCrumFromRawProducts(rawProducts) {
+        const rawCategoryFilter = rawProducts.filters.find((filter) => filter.id === 'category');
+        if (rawCategoryFilter == null || rawCategoryFilter.values[0] == null || rawCategoryFilter.values[0].path_from_root == null ) {
+            return [];
+        }
+
+        const breadcrumCategories = rawCategoryFilter.values[0].path_from_root.map((category) => category.name);
+        return breadcrumCategories;
     }
 
     static async getCategoryClasification(categoryId) {
@@ -80,7 +95,12 @@ export default class ProductsService {
         const rawProductsFetch = await fetch(`https://api.mercadolibre.com/sites/MLA/search?q=:${productQuery}`);
         const rawProducts = await rawProductsFetch.json();
         const mostImportantCategory = this.getMostImportantCategory(rawProducts);
-        const breadcrumCategories = await this.getCategoryClasification(mostImportantCategory.id);
+        let breadcrumCategories = [];
+        if (mostImportantCategory != null) {
+            breadcrumCategories = await this.getCategoryClasification(mostImportantCategory.id);
+        } else {
+            breadcrumCategories = this.getBreadCrumFromRawProducts(rawProducts);
+        }
 
         return this.generateProductsResponse(rawProducts, breadcrumCategories);
     };

@@ -13,7 +13,8 @@ export default class ProductsService {
                 },
                 "picture": product.thumbnail,
                 "condition": product.condition,
-                "free_shipping": product.shipping.free_shipping
+                "free_shipping": product.shipping.free_shipping,
+                "address": product.address.state_name
             };
 
             return simpleProduct;
